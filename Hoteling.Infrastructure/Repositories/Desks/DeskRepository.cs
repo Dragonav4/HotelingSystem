@@ -1,3 +1,4 @@
+using Hoteling.Application.Interfaces.IRepository;
 using Hoteling.Domain.Entities;
 using Hoteling.Infastructure.Data;
 

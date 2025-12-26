@@ -1,15 +1,17 @@
-using Hoteling.Application;
 using Hoteling.Application.Interfaces.IRepository;
+using Hoteling.Domain.Entities;
 using Hoteling.Infastructure.Data;
 using Hoteling.Infastructure.Options;
 using Hoteling.Infastructure.Repositories;
 using Hoteling.Infastructure.Repositories.Desks;
+using Hoteling.Infastructure.Repositories.Reservations;
+using Hoteling.Infastructure.Repositories.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Hoteling.Infastructure;
+namespace Hoteling.Infastructure.Extensions;
 
 public static class InfrastructureServiceCollectionExtensions
 {
@@ -27,8 +29,11 @@ public static class InfrastructureServiceCollectionExtensions
 
         // Repositories
         services.AddScoped(typeof(ICrudRepository<>), typeof(CrudRepository<>));
-        services.AddScoped<IDeskRepository, DeskRepository>();
 
+        services.AddScoped<ICrudRepository<Reservation>, ReservationRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IDeskRepository, DeskRepository>();
+        services.AddScoped<IReservationRepository, ReservationRepository>();
         return services;
     }
 }

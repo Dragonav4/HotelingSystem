@@ -1,20 +1,17 @@
+using Hoteling.Application.Interfaces;
 using Hoteling.Application.Interfaces.IRepository;
 using Hoteling.Application.Interfaces.IService;
 using Hoteling.Domain.Entities;
 
 namespace Hoteling.Application.Services;
 
-public class UserService(IUserRepository repository) : CrudService<User>(repository), IUserService
+public class UserService(IUserRepository desksRepository) : CrudService<User>(desksRepository), IUserService
 {
     public async Task<User?> GetUserByEmail(string email)
     {
-        return await repository.GetByEmailAsync(email);
+        return await desksRepository.GetByEmailAsync(email);
     }
 
 
 }
 
-public interface IUserService : IService<User>
-{
-    Task<User?> GetUserByEmail(string email);
-}

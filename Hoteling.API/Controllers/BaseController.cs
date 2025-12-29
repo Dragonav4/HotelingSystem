@@ -1,14 +1,19 @@
+using Hoteling.API.Exceptions;
 using Hoteling.Application.Interfaces;
 using Hoteling.Application.Interfaces.IService;
 using Hoteling.Domain.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hoteling.API.Controllers;
 
+public class ActionListView<T>
+{
+    public int Actions { get; set; }
+    public List<T> Items { get; set; }
+}
 //[Authorize]
 public abstract class BaseCrudController<T, TCreateView, TView>
-    (IService<T> crudService, ICrudMapper<T, TCreateView, TView> mapper, ILogger logger)
+    (IService<T> deskService, ICrudMapper<T, TCreateView, TView> mapper, ILogger logger)
     : ControllerBase
     where T : class, IHasId
     where TView : TCreateView, IHasId
@@ -20,7 +25,7 @@ public abstract class BaseCrudController<T, TCreateView, TView>
     {
         Logger.LogInformation("Creating new {EntityName}", typeof(T).Name);
         var input = mapper.MapCreateDtoToDomain(createDto);
-        var domain = await crudService.CreateAsync(input);
+        var domain = await deskService.CreateAsync(input);
         OnItemCreated(domain);
         var result = mapper.MapDomainToView(domain);
         Logger.LogInformation("{EntityName} created with ID {Id}", typeof(T).Name, domain.Id);
@@ -30,17 +35,15 @@ public abstract class BaseCrudController<T, TCreateView, TView>
     [HttpPut("{id:guid}")]
     public virtual async Task<ActionResult<TView>> UpdateAsync([FromRoute] Guid id, [FromBody] TView updateDto)
     {
-        //updateDto.Id = id; // Force ID from route to avoid mismatch
 
         Logger.LogInformation("Updating {EntityName} with ID {Id}", typeof(T).Name, id);
 
         var input = mapper.MapViewToDomain(id, updateDto);
-        var domain = await crudService.UpdateAsync(input);
+        var domain = await deskService.UpdateAsync(input);
 
         if (domain == null)
         {
-            Logger.LogWarning("{EntityName} with ID {Id} not found for update", typeof(T).Name, id);
-            return NotFound();
+            throw new NotFoundException($"{typeof(T).Name} with ID {id} not found for update");
         }
 
         OnItemUpdated(domain);
@@ -53,11 +56,10 @@ public abstract class BaseCrudController<T, TCreateView, TView>
     public virtual async Task<ActionResult> DeleteAsync([FromRoute] Guid id)
     {
         Logger.LogInformation("Deleting {EntityName} with ID {Id}", typeof(T).Name, id);
-        var success = await crudService.DeleteAsync(id);
+        var success = await deskService.DeleteAsync(id);
         if (!success)
         {
-            Logger.LogWarning("{EntityName} with ID {Id} not found for deletion", typeof(T).Name, id);
-            return NotFound();
+            throw new NotFoundException($"{typeof(T).Name} with ID {id} not found for deletion");
         }
 
         Logger.LogInformation("{EntityName} with ID {Id} deleted successfully", typeof(T).Name, id);
@@ -68,11 +70,10 @@ public abstract class BaseCrudController<T, TCreateView, TView>
     public virtual async Task<ActionResult<TView>> GetById([FromRoute] Guid id)
     {
         Logger.LogInformation("Getting {EntityName} with ID {Id}", typeof(T).Name, id);
-        var domain = await crudService.GetByIdAsync(id);
+        var domain = await deskService.GetByIdAsync(id);
         if (domain == null)
         {
-            Logger.LogWarning("{EntityName} with ID {Id} not found", typeof(T).Name, id);
-            return NotFound();
+            throw new NotFoundException($"{typeof(T).Name} with ID {id} not found");
         }
 
         var result = mapper.MapDomainToView(domain);
@@ -80,13 +81,18 @@ public abstract class BaseCrudController<T, TCreateView, TView>
     }
 
     [HttpGet]
-    public virtual async Task<ActionResult<List<TView>>> GetAll()
+    public virtual async Task<ActionResult<ActionListView<TView>>> GetAll()
     {
         Logger.LogInformation("Getting all {EntityName}s", typeof(T).Name);
-        var domain = await crudService.GetAllAsync();
-        var result = domain
+        var domain = await deskService.GetAllAsync();
+        var items = domain
             .Select(item => mapper.MapDomainToView(item))
             .ToList();
+        var result = new ActionListView<TView>
+        {
+            Items = items,
+            Actions = 7, // create + view + update
+        };
         return Ok(result);
     }
 

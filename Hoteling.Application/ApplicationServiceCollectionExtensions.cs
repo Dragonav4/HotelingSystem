@@ -17,7 +17,7 @@ public static class ApplicationServiceCollectionExtensions
         // Services
         services.AddScoped(typeof(IService<>), typeof(CrudService<>));
         services.AddScoped<IUserService, UserService>();
-
+        services.AddScoped<IDeskService, DeskService>();
         // Mappers
         services.AddScoped<ICrudMapper<Desk, DeskCreateView, DeskView>, DeskMapper>();
         services.AddScoped<ICrudMapper<User, UserCreateView, UserView>, UserMapper>();

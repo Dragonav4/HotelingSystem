@@ -16,6 +16,7 @@ public static class Program
         Env.Load();
         var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
         var builder = WebApplication.CreateBuilder(args);
+        var frontendUrl = builder.Configuration["FRONTEND_URL"];
         builder.Services.AddAuthentication(builder.Configuration);
         builder.Services.AddAuthorization();
 
@@ -36,7 +37,7 @@ public static class Program
             options.AddPolicy(name: myAllowSpecificOrigins,
                 policy =>
                 {
-                    policy.WithOrigins("http://localhost:7000")
+                    policy.WithOrigins(frontendUrl!)
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();

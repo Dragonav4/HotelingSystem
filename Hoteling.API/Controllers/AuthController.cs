@@ -12,7 +12,7 @@ namespace Hoteling.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [AllowAnonymous]
-public class AuthController(IUserService userService) : ControllerBase
+public class AuthController(IUserService userService, IConfiguration configuration) : ControllerBase
 {
     [HttpGet("login")]
     public IActionResult Login([FromQuery] string? returnUrl)
@@ -28,8 +28,8 @@ public class AuthController(IUserService userService) : ControllerBase
     public async Task<IActionResult> Logout([FromQuery] string? returnUrl)
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        var redirectUri = !string.IsNullOrEmpty(returnUrl) ? returnUrl : "http://localhost:7000";
-        return Redirect(redirectUri);
+        var frontendUrl = configuration["FRONTEND_URL"];
+        return Url.IsLocalUrl(returnUrl) ? Redirect(returnUrl) : Redirect(frontendUrl!); // Url.IsLocalUrl checks is it our domain
     }
 
     [HttpGet("me")]

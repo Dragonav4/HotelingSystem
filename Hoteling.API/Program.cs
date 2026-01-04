@@ -9,11 +9,12 @@ using Hoteling.Infastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hoteling.API;
-
+using DotNetEnv;
 public static class Program
 {
     public static void Main(string[] args)
     {
+        Env.Load();
         var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
         var builder = WebApplication.CreateBuilder(args);
 

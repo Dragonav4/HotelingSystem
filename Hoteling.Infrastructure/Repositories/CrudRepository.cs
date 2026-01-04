@@ -15,13 +15,16 @@ public class CrudRepository<T>(AppDbContext dbContext) : ICrudRepository<T> wher
         return await _dbSet.FindAsync([id], cancellationToken: cancellationToken);
     }
 
-    public virtual async Task<IReadOnlyList<T>> GetAllAsync(int? skip = null, int? take = null, CancellationToken cancellationToken = default)
+    public virtual async Task<(IReadOnlyList<T> Items, int TotalCount)> GetAllAsync(int? skip = null, int? take = null, CancellationToken cancellationToken = default)
     {
         IQueryable<T> query = _dbSet;
+        var totalCount = await query.CountAsync(cancellationToken);
+
         if (skip.HasValue) query = query.Skip(skip.Value);
         if (take.HasValue) query = query.Take(take.Value);
 
-        return await query.ToListAsync(cancellationToken);
+        var items = await query.ToListAsync(cancellationToken);
+        return (items, totalCount);
     }
 
     public virtual async Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default)

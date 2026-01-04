@@ -44,6 +44,26 @@ dotnet run
 After startup:
 - API will be available at: `http://localhost:5126`
 - Swagger UI (Documentation): `http://localhost:5126/swagger` (available in Development mode)
+## Roles and Permissions
+
+The system implements role-based access control (RBAC) with the following roles:
+
+### Guest (Unauthenticated or Role=Guest)
+- **Desks**: View list of desks and basic desk information.
+- **Reservations**: View if a desk is occupied and on which dates.
+- **Privacy**: Cannot see identity of the person who made the reservation.
+- **Restricted**: Cannot create, edit, or delete any data.
+
+### Employee
+- **View Access**: Full access to see all reservation details, including who reserved the desk.
+- **Reservations**: Create reservations for themselves.
+- **Management**: Edit or delete their own reservations.
+
+### Admin
+- **Full Access**: All Employee permissions.
+- **Desks Management**: Full CRUD access to the Desks entity (Create, Update, Delete desks).
+- **System Management**: Ability to manage system-wide settings and entities.
+
 ## Project Structure
 - `Hoteling.API` - Controllers, middleware, and configuration.
 - `Hoteling.Application` - Business logic, services, and mappers.

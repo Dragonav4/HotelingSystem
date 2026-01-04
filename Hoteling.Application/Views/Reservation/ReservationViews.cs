@@ -10,7 +10,6 @@ public class ReservationCreateView
     [Required]
     public Guid DeskId { get; set; }
 
-    [Required]
     public Guid UserId { get; set; }
 
     [Required]
@@ -24,4 +23,5 @@ public class ReservationView : ReservationCreateView, IHasId
 
     public DeskView? Desk { get; set; }
     public UserView? User { get; set; }
+    public int Actions { get; set; }
 }

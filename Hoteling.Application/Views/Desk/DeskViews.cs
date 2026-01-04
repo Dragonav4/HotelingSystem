@@ -15,4 +15,9 @@ public class DeskCreateView
 public class DeskView : DeskCreateView, IHasId
 {
     public Guid Id { get; set; }
+    public bool IsOccupied { get; set; }
+    public DateTime? ReservationDate { get; set; }
+    //public Guid? ReservedByUserId { get; set; }
+    public string? ReservedByUserName { get; set; }
+    public int Actions { get; set; }
 }

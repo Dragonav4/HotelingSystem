@@ -10,7 +10,7 @@ namespace Hoteling.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class UsersController(IService<User> deskService, ICrudMapper<User, UserCreateView, UserView> mapper, ILogger<UsersController> logger)
-    : BaseCrudController<User, UserCreateView, UserView>(deskService, mapper, logger)
+public class UsersController(IService<User> service, ICrudMapper<User, UserCreateView, UserView> mapper, ILogger<UsersController> logger)
+    : BaseCrudController<User, UserCreateView, UserView>(service, mapper, logger)
 {
 }

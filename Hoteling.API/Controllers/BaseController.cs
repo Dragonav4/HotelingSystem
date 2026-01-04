@@ -1,19 +1,15 @@
 using Hoteling.API.Exceptions;
 using Hoteling.Application.Interfaces;
 using Hoteling.Application.Interfaces.IService;
+using Hoteling.Application.Views.Common;
 using Hoteling.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hoteling.API.Controllers;
 
-public class ActionListView<T>
-{
-    public int Actions { get; set; }
-    public List<T> Items { get; set; }
-}
 //[Authorize]
 public abstract class BaseCrudController<T, TCreateView, TView>
-    (IService<T> deskService, ICrudMapper<T, TCreateView, TView> mapper, ILogger logger)
+    (IService<T> service, ICrudMapper<T, TCreateView, TView> mapper, ILogger logger)
     : ControllerBase
     where T : class, IHasId
     where TView : TCreateView, IHasId
@@ -25,9 +21,9 @@ public abstract class BaseCrudController<T, TCreateView, TView>
     {
         Logger.LogInformation("Creating new {EntityName}", typeof(T).Name);
         var input = mapper.MapCreateDtoToDomain(createDto);
-        var domain = await deskService.CreateAsync(input);
+        var domain = await service.CreateAsync(input);
         OnItemCreated(domain);
-        var result = mapper.MapDomainToView(domain);
+        var result = mapper.MapDomainToView(domain, User);
         Logger.LogInformation("{EntityName} created with ID {Id}", typeof(T).Name, domain.Id);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
@@ -39,7 +35,7 @@ public abstract class BaseCrudController<T, TCreateView, TView>
         Logger.LogInformation("Updating {EntityName} with ID {Id}", typeof(T).Name, id);
 
         var input = mapper.MapViewToDomain(id, updateDto);
-        var domain = await deskService.UpdateAsync(input);
+        var domain = await service.UpdateAsync(input);
 
         if (domain == null)
         {
@@ -47,7 +43,7 @@ public abstract class BaseCrudController<T, TCreateView, TView>
         }
 
         OnItemUpdated(domain);
-        var result = mapper.MapDomainToView(domain);
+        var result = mapper.MapDomainToView(domain, User);
         Logger.LogInformation("{EntityName} with ID {Id} updated successfully", typeof(T).Name, id);
         return Ok(result);
     }
@@ -56,7 +52,7 @@ public abstract class BaseCrudController<T, TCreateView, TView>
     public virtual async Task<ActionResult> DeleteAsync([FromRoute] Guid id)
     {
         Logger.LogInformation("Deleting {EntityName} with ID {Id}", typeof(T).Name, id);
-        var success = await deskService.DeleteAsync(id);
+        var success = await service.DeleteAsync(id);
         if (!success)
         {
             throw new NotFoundException($"{typeof(T).Name} with ID {id} not found for deletion");
@@ -70,29 +66,23 @@ public abstract class BaseCrudController<T, TCreateView, TView>
     public virtual async Task<ActionResult<TView>> GetById([FromRoute] Guid id)
     {
         Logger.LogInformation("Getting {EntityName} with ID {Id}", typeof(T).Name, id);
-        var domain = await deskService.GetByIdAsync(id);
+        var domain = await service.GetByIdAsync(id);
         if (domain == null)
         {
             throw new NotFoundException($"{typeof(T).Name} with ID {id} not found");
         }
 
-        var result = mapper.MapDomainToView(domain);
+        var result = mapper.MapDomainToView(domain, User);
         return Ok(result);
     }
 
     [HttpGet]
-    public virtual async Task<ActionResult<ActionListView<TView>>> GetAll()
+    public virtual async Task<ActionResult<ActionListView<TView>>> GetAllAsync(int? skip = null, int? take = null)
     {
         Logger.LogInformation("Getting all {EntityName}s", typeof(T).Name);
-        var domain = await deskService.GetAllAsync();
-        var items = domain
-            .Select(item => mapper.MapDomainToView(item))
-            .ToList();
-        var result = new ActionListView<TView>
-        {
-            Items = items,
-            Actions = 7, // create + view + update
-        };
+        var (items, totalCount) = await service.GetAllAsync(skip, take);
+
+        var result = mapper.MapDomainModelsToListView(items, totalCount, User);
         return Ok(result);
     }
 

@@ -11,6 +11,7 @@ namespace Hoteling.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous]
 public class AuthController(IUserService userService) : ControllerBase
 {
     [HttpGet("login")]
@@ -24,13 +25,11 @@ public class AuthController(IUserService userService) : ControllerBase
     }
 
     [HttpGet("logout")]
-    public IActionResult Logout([FromQuery] string? returnUrl)
+    public async Task<IActionResult> Logout([FromQuery] string? returnUrl)
     {
-        return SignOut(
-            new AuthenticationProperties
-            {
-                RedirectUri = returnUrl ?? "/"
-            }, CookieAuthenticationDefaults.AuthenticationScheme);
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        var redirectUri = !string.IsNullOrEmpty(returnUrl) ? returnUrl : "http://localhost:7000";
+        return Redirect(redirectUri);
     }
 
     [HttpGet("me")]
@@ -46,7 +45,15 @@ public class AuthController(IUserService userService) : ControllerBase
 
         var user = await userService.GetUserByEmail(email)
                    ?? throw new UserNotFoundException(email);
+        var pictureUrl = User.FindFirst("picture")?.Value;
 
-        return Ok(user);
+        return Ok(new
+        {
+            user.Id,
+            user.Email,
+            user.UserName,
+            user.Role,
+            picture = pictureUrl
+        });
     }
 }

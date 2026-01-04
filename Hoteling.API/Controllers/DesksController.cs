@@ -1,5 +1,6 @@
 using Hoteling.Application.Interfaces;
 using Hoteling.Application.Interfaces.IService;
+using Hoteling.Application.Views.Common;
 using Hoteling.Application.Views.Desk;
 using Hoteling.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -11,22 +12,22 @@ namespace Hoteling.API.Controllers;
 [Route("api/[controller]")]
 [Authorize(Roles = "Admin,Employee")]
 public class DesksController(
-    IDeskService deskService,
+    IDeskService service,
     ICrudMapper<Desk, DeskCreateView, DeskView> mapper,
     ILogger<DesksController> logger)
-    : BaseCrudController<Desk, DeskCreateView, DeskView>(deskService, mapper, logger)
+    : BaseCrudController<Desk, DeskCreateView, DeskView>(service, mapper, logger)
 {
-    [HttpGet("map")]
+    [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetMap([FromQuery] DateTime? date, CancellationToken cancellationToken)
+    public override Task<ActionResult<ActionListView<DeskView>>> GetAllAsync(int? skip = null, int? take = null)
     {
-        var isGuest = !User.Identity?.IsAuthenticated ?? true;
-        var getMap = await deskService.GetMapAsync(date, isGuest,cancellationToken);
-        var result = new
-        {
-            actions = 7,
-            getMap,
-        };
-        return Ok(result);
+        return base.GetAllAsync(skip, take);
+    }
+
+    [HttpGet("{id:guid}")]
+    [AllowAnonymous]
+    public override Task<ActionResult<DeskView>> GetById(Guid id)
+    {
+        return base.GetById(id);
     }
 }

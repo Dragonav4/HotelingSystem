@@ -19,7 +19,7 @@ public class ReservationMapper(
     {
         return new ActionListView<ReservationView>
         {
-            Items = domains.Select(d => MapDomainToView(d, user)).OrderBy(d => d.ReservationDate).ToList(),
+            Items = domains.Select(d => MapDomainToView(d, user)).OrderByDescending(d => d.ReservationDate).ToList(),
             TotalCount = totalCount,
             Actions = GetListActions(user),
         };

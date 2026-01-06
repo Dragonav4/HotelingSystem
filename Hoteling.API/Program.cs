@@ -43,6 +43,9 @@ public static class Program
                         .AllowCredentials();
                 });
         });
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 
 

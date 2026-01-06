@@ -17,4 +17,13 @@ public class UserRepository(AppDbContext dbContext) : CrudRepository<User>(dbCon
         return await dbContext.Users
             .FirstOrDefaultAsync(u => u.Email == email);
     }
+
+    public async Task<User?> GetByUsernameAsync(string username)
+    {
+        if (string.IsNullOrEmpty(username))
+            throw new ArgumentNullException(nameof(username), "Username is required.");
+
+        return await dbContext.Users
+            .FirstOrDefaultAsync(u => u.UserName == username);
+    }
 }

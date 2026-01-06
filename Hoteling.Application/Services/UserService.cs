@@ -14,9 +14,12 @@ public class UserService(IUserRepository repository) : CrudService<User>(reposit
 
     public async override Task<User?> UpdateAsync(User updateDto, CancellationToken cancellationToken = default)
     {
-        var user = await repository.GetByIdAsync(updateDto.Id, cancellationToken);
-        if (user!.Role == updateDto.Role) throw new UserRoleException("User already has this role.");
-        if(user.UserName == updateDto.UserName) throw new UserNameException("User name already exists.");
+        var existingUserWithSameUsername = await repository.GetByUsernameAsync(updateDto.UserName);
+        if (existingUserWithSameUsername != null && existingUserWithSameUsername.Id != updateDto.Id)
+        {
+            throw new UserNameException($"Username '{updateDto.UserName}' is already taken by another user.");
+        }
+
         return await base.UpdateAsync(updateDto, cancellationToken);
     }
 }
